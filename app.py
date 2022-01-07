@@ -12,6 +12,7 @@ import datetime
 import random
 import colorsys
 from PIL import Image, ImageDraw, ImageFont
+import fnmatch
 
 from mrcnn.config import Config
 import mrcnn.model as modellib
@@ -158,7 +159,7 @@ def color_splash(image, mask):
     """
     # Make a grayscale copy of the image. The grayscale copy still
     # has 3 RGB channels, though.
-    print(image)
+    # print(image)
     gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
     # Copy color pixels from the original color image where mask is set
     if mask.shape[-1] > 0:
@@ -183,14 +184,25 @@ def encode(image) -> str:
 
 @app.route('/', methods=['GET'])
 def index():
-    resp = make_response(render_template('index.html'))
+    results = filter(lambda x: ".jpg" in x, os.listdir(ROOT_DIR + "/static/sample"))
+    resp = make_response(render_template('index.html', imgs=results))
 
     return resp
 
 
 @app.route('/results', methods=['GET'])
 def result():
-    results = filter(lambda x: ".png" in x, os.listdir(ROOT_DIR + "/static/results"))
+    # <><><><><><><><><><>  Get Today's Files  <><><><><><><><><><>
+    folder = "./static/results/"
+    folderContent = os.listdir(folder)
+    results = []
+    today = "{:%Y%m%d}".format(datetime.datetime.now())
+    for i, file in enumerate(folderContent):
+        # print(file, today)
+        if fnmatch.fnmatch(file, today + "*"):
+            results.append(file)
+
+    # results = filter(lambda x: ".png" in x, os.listdir(ROOT_DIR + "/static/results"))
     resp = make_response(render_template('results.html', imgs=results))
 
     return resp
@@ -237,4 +249,4 @@ if __name__ == '__main__':
             model_dir=ROOT_DIR)
     model.load_weights("mask_rcnn_dian_0060.h5", by_name=True)
     
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

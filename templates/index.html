@@ -30,13 +30,28 @@
 			<div class="file-loading">
 				<input id="upload" name="image" type="file" class="file" multiple="true">
 			</div>
+			
+			{% for img in imgs %}
+			<div class="col-sm-4">
+				<img class="img-responsive img-thumbnail center-block" src="static/sample/{{ img }}">
+			</div>
+			{% endfor %}
 		</div>
-
 	<script>
+
 		$("#upload").fileinput({
 			'uploadUrl': '/api/getResult',
 			'showUpload': true,
-			'allowedFileExtensions': ['png', 'jpg']
+			previewFileType: "image",
+      browseClass: "btn btn-success",
+      browseLabel: "瀏覽",
+      browseIcon: "<i class=\"glyphicon glyphicon-picture\"></i> ",
+      removeClass: "btn btn-danger",
+      removeLabel: "刪除",
+      removeIcon: "<i class=\"glyphicon glyphicon-trash\"></i> ",
+      uploadClass: "btn btn-info",
+      uploadLabel: "上傳",
+      uploadIcon: "<i class=\"glyphicon glyphicon-upload\"></i> "
 		});
 	</script>
 
