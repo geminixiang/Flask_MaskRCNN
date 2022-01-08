@@ -203,7 +203,7 @@ def result():
             results.append(file)
 
     # results = filter(lambda x: ".png" in x, os.listdir(ROOT_DIR + "/static/results"))
-    resp = make_response(render_template('results.html', imgs=results))
+    resp = make_response(render_template('results.html', imgs=results[::-1]))
 
     return resp
 
