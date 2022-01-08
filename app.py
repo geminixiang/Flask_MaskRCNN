@@ -17,6 +17,7 @@ import fnmatch
 from mrcnn.config import Config
 import mrcnn.model as modellib
 
+global graph, model
 
 ROOT_DIR = os.path.abspath("./")
 sys.path.append(ROOT_DIR)
@@ -34,6 +35,12 @@ class InferenceConfig(Config):
     IMAGE_MIN_DIM = 1024
     IMAGE_MAX_DIM = 1024
     DETECTION_MIN_CONFIDENCE = 0.75
+
+graph = tf.get_default_graph()
+model = modellib.MaskRCNN( mode="inference", 
+        config=InferenceConfig(), 
+        model_dir=ROOT_DIR)
+model.load_weights("mask_rcnn_dian_0060.h5", by_name=True)
 
 def apply_mask(image, mask, color, alpha=0.5):
     """Apply the given mask to the image.
@@ -170,18 +177,6 @@ def color_splash(image, mask):
         splash = gray.astype(np.uint8)
     return splash
 
-
-def encode(image) -> str:
-    # convert image to bytes
-    with BytesIO() as output_bytes:
-        PIL_image = Image.fromarray(skimage.img_as_ubyte(image))
-        # Note JPG is not a vaild type here
-        PIL_image.save(output_bytes, 'JPEG')
-        bytes_data = output_bytes.getvalue()
-    # encode bytes to base64 string
-    base64_str = str(base64.b64encode(bytes_data), 'utf-8')
-    return base64_str
-
 @app.route('/', methods=['GET'])
 def index():
     results = filter(lambda x: ".jpg" in x, os.listdir(ROOT_DIR + "/static/sample"))
@@ -212,13 +207,13 @@ def result():
 def get_result():
     resp = dict()
     resp["ok"] = True
-
     image = Image.open(request.files['image'])
 
     # 確認是原始graph
     with graph.as_default():
         r = model.detect([np.array(image)], verbose=1)[0]
         splash = color_splash(np.array(image), r['masks'])
+    
     file_name = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_splash.png".format(datetime.datetime.now())
     file_name_origin = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_origin.png".format(datetime.datetime.now())
     file_name_mask = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_mask.png".format(datetime.datetime.now())
@@ -230,23 +225,15 @@ def get_result():
     #     mask_result = Image.fromarray(r['masks'][:, :, i])
     #     mask_result.save(ROOT_DIR + "/static/results/" + file_name + "_" + str(i) + ".png")
 
-    
     image.save(file_name_origin)
     
     save_image(np.array(image), file_name_mask, r['rois'], r['masks'],
             r['class_ids'], r['scores'], class_names,
             scores_thresh=0.75, mode=0)
 
-
-
     return make_response(resp)
 
 
 if __name__ == '__main__':
-    graph = tf.get_default_graph()
-    model = modellib.MaskRCNN( mode="inference", 
-            config=InferenceConfig(), 
-            model_dir=ROOT_DIR)
-    model.load_weights("mask_rcnn_dian_0060.h5", by_name=True)
-    
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)
+

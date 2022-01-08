@@ -8,6 +8,10 @@ Written by Waleed Abdulla
 """
 
 import os
+# Close WARNING
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+
 import random
 import datetime
 import re
@@ -29,7 +33,6 @@ from mrcnn import utils
 from distutils.version import LooseVersion
 assert LooseVersion(tf.__version__) >= LooseVersion("1.3")
 assert LooseVersion(keras.__version__) >= LooseVersion('2.0.8')
-
 
 ############################################################
 #  Utility Functions
