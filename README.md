@@ -1,13 +1,17 @@
-# Mask_RCNN_TSR
-一个基于Mask R-CNN的交通标志识别课程设计
+# Flask_Mask_RCNN
 
 ***
 
-* `model.h5`模型文件（文件较大，请在release中下载）
-* `static`静态文件及结果
-* `mrcnn`[https://github.com/matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN)
-* `templates`前端模板
-* `app.py`主程序
+* `model.h5` tensorflow模型 (就不上傳了)
+* `static` contains Js、CSS、Results、Sample images
+* `mrcnn` [https://github.com/matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN)
+* `templates` for Front-end page of Flask
+* `app.py` for Flask api
 
-时间仓促，做的比较粗糙，见谅。
-
+## Quick Start
+```bash
+conda create -n mrcnn-flask python=3.7
+conda activate mrcnn-flask
+pip install -r requirements.txt
+bash -i start.sh
+```

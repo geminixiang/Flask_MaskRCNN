@@ -194,7 +194,7 @@ def result():
     today = "{:%Y%m%d}".format(datetime.datetime.now())
     for i, file in enumerate(folderContent):
         # print(file, today)
-        if fnmatch.fnmatch(file, today + "*"):
+        if fnmatch.fnmatch(file, today + "*") and fnmatch.fnmatch(file, "*" + "_mask.png"):
             results.append(file)
 
     # results = filter(lambda x: ".png" in x, os.listdir(ROOT_DIR + "/static/results"))
@@ -235,5 +235,5 @@ def get_result():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True, debug=False)
+    app.run(host='0.0.0.0', port=8000, threaded=True, debug=False)
 
