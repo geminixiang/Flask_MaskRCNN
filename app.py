@@ -190,10 +190,13 @@ def result():
     # <><><><><><><><><><>  Get Today's Files  <><><><><><><><><><>
     folder = "./static/results/"
     folderContent = os.listdir(folder)
+    # 資料夾內容先排序，以便後續顯示有個邏輯性
+    folderContent.sort()
     results = []
     today = "{:%Y%m%d}".format(datetime.datetime.now())
-    for i, file in enumerate(folderContent):
-        # print(file, today)
+
+    for i, file in sorted(enumerate(folderContent)):
+        # print(file)
         if fnmatch.fnmatch(file, today + "*") and fnmatch.fnmatch(file, "*" + "_mask.png"):
             results.append(file)
 
@@ -203,16 +206,21 @@ def result():
     return resp
 
 
-@app.route('/api/getResult', methods=['POST'])
-def get_result():
+@app.route('/api/maskrcnn', methods=['POST'])
+def MaskRCNN():
     resp = dict()
     resp["ok"] = True
     image = Image.open(request.files['image'])
+    # 避免PNG會多一個透明通道(長,寬,4)，預設是(長,寬,3)，這邊轉換一下。
+    image = image.convert("RGB")
+    image_array = np.array(image)
 
+    print(image_array.shape)
+  
     # 確認是原始graph
     with graph.as_default():
-        r = model.detect([np.array(image)], verbose=1)[0]
-        splash = color_splash(np.array(image), r['masks'])
+        r = model.detect([image_array], verbose=1)[0]
+        splash = color_splash(image_array, r['masks'])
     
     file_name = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_splash.png".format(datetime.datetime.now())
     file_name_origin = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_origin.png".format(datetime.datetime.now())
@@ -227,11 +235,27 @@ def get_result():
 
     image.save(file_name_origin)
     
-    save_image(np.array(image), file_name_mask, r['rois'], r['masks'],
+    save_image(image_array, file_name_mask, r['rois'], r['masks'],
             r['class_ids'], r['scores'], class_names,
             scores_thresh=0.75, mode=0)
 
     return make_response(resp)
+
+# @app.route('/api/resnest', methods=['POST'])
+# def get_resnest():
+#     # load image
+#     resp = dict()
+#     resp["ok"] = True
+#     image = Image.open(request.files['image'])
+
+#     import tensorflow_hub as hub
+#     detector = hub.load("https://tfhub.dev/tensorflow/mask_rcnn/inception_resnet_v2_1024x1024/1")
+#     detector_output = detector(image)
+#     class_ids = detector_output["detection_classes"]
+#     print(class_ids)
+
+
+#     return make_response(resp)
 
 
 if __name__ == '__main__':
