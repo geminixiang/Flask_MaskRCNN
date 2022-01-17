@@ -40,7 +40,7 @@ graph = tf.get_default_graph()
 model = modellib.MaskRCNN( mode="inference", 
         config=InferenceConfig(), 
         model_dir=ROOT_DIR)
-model.load_weights("mask_rcnn_dian_0060.h5", by_name=True)
+model.load_weights("mask_rcnn_dian_0067.h5", by_name=True)
 
 def apply_mask(image, mask, color, alpha=0.5):
     """Apply the given mask to the image.

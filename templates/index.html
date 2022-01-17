@@ -12,6 +12,43 @@
 	<script src="static/js/bootstrap.min.js"></script>
 	<script src="static/js/fileinput.min.js"></script>
 	<title>Mask R-CNN物件辨識</title>
+<style>
+.waterfall {
+  list-style: none;
+  column-gap: 0;
+  column-count: 5;
+}
+.waterfall .item {
+  width: 100%;
+  height: 100%;
+  break-inside: avoid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (min-width: 320px) and (max-width: 759.5px) {
+  .waterfall {
+    column-count: 1;
+  }
+}
+@media (min-width: 760px) and (max-width: 979.5px) {
+  .waterfall {
+    column-count: 3;
+  }
+}
+@media (min-width: 980px) and (max-width: 1023.5px) {
+  .waterfall {
+    column-count: 4;
+  }
+}
+@media (min-width: 1024px) {
+  .waterfall {
+    column-count: 5;
+  }
+}
+	</style>
 </head>
 
 <body>
@@ -32,12 +69,15 @@
 		<div class="file-loading">
 			<input id="upload" name="image" type="file" class="file" multiple="true">
 		</div>
-
-		{% for img in imgs %}
-		<div class="col-sm-4">
-			<img class="img-responsive img-thumbnail center-block" src="static/sample/{{ img }}">
-		</div>
+                
+		<h2>範例圖片:</div>
+		<div style="margin: 0 150px;" class="waterfall">
+			{% for img in imgs %}
+			<div class="item">
+				<img class="img-responsive img-thumbnail center-block" src="static/sample/{{ img }}">
+			</div>
 		{% endfor %}
+		</div>
 	</div>
 	<script>
 
@@ -45,6 +85,9 @@
 			'uploadUrl': '/api/maskrcnn',
 			'showUpload': true,
 			previewFileType: "image",
+			dropZoneTitle: "拖曳圖片至此...",
+			browseOnZoneClick: true,
+			dropZoneClickTitle: "<br/>(或點擊選取圖片)",
 			browseClass: "btn btn-success",
 			browseLabel: "瀏覽",
 			browseIcon: "<i class=\"glyphicon glyphicon-picture\"></i> ",
