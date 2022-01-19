@@ -1,0 +1,13 @@
+matrix:
+  include:
+    - language: python
+      python:
+        - 3.6
+      services:
+        - docker
+      cache: pip
+      env:
+        - TESTING=true
+      before_script:
+        - pip install -r requirements.txt
+      script: pytest
