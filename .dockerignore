@@ -1,0 +1,3 @@
+models/*
+!models/mask_rcnn_dian_0067.h5
+static/results/2022*

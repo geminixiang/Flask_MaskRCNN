@@ -41,7 +41,7 @@ model = modellib.MaskRCNN( mode="inference",
         config=InferenceConfig(), 
         model_dir=ROOT_DIR)
 try:
-    model.load_weights("mask_rcnn_dian_0067.h5", by_name=True)
+    model.load_weights("./models/mask_rcnn_dian_0067.h5", by_name=True)
 except:
     print("can't find .h5 model file")
 
