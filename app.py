@@ -205,6 +205,9 @@ def result():
 
     return resp
 
+@app.route('/hi', methods=['GET'])
+def hi():
+    return "hi"
 
 @app.route('/api/maskrcnn', methods=['POST'])
 def MaskRCNN():
