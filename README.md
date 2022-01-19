@@ -22,6 +22,18 @@ pip install -r requirements.txt
 bash -i start.sh
 ```
 
+## Docker
+```bash
+## Build image
+docker build -t f416720001/flask-mrcnn:0.0.1 .
+
+## Run container with port 8000
+docker run -p 8000:8000 f416720001/flask-mrcnn:0.0.1
+
+## Or Run with cpu/memory limits
+docker run --cpus="4.0" --memory="2g" -p 8000:8000 f416720001/flask-mrcnn:0.0.1
+```
+
 ## 有坑必學
 [Pillow 中文顯示](https://pillow.readthedocs.io/en/stable/reference/ImageFont.html)
 
