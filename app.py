@@ -40,7 +40,10 @@ graph = tf.get_default_graph()
 model = modellib.MaskRCNN( mode="inference", 
         config=InferenceConfig(), 
         model_dir=ROOT_DIR)
-model.load_weights("mask_rcnn_dian_0067.h5", by_name=True)
+try:
+    model.load_weights("mask_rcnn_dian_0067.h5", by_name=True)
+except:
+    print("can't find .h5 model file")
 
 def apply_mask(image, mask, color, alpha=0.5):
     """Apply the given mask to the image.
