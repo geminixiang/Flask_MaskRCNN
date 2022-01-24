@@ -2,6 +2,8 @@
 import os
 import sys
 import uuid
+import json
+
 import numpy as np
 from PIL import Image
 from flask import Flask, render_template, make_response, request
@@ -23,25 +25,28 @@ ROOT_DIR = os.path.abspath("./")
 sys.path.append(ROOT_DIR)
 
 app = Flask(__name__, static_folder='static')
+app.config['JSON_AS_ASCII'] = False
 app.config['SECRET_KEY'] = os.urandom(24)
-class_names = ['BG', '人', '房子', '樹', '時鐘', '人力車', '轎子', '船', '貓', '羊', '牛', '象', '斑馬', '傘', '領帶', '扇', '水瓶', '碗', '椅', '盆栽植物', '桌', '水桶', '書', '花瓶', '馬匹', '炮', '火車', '杯', '畫作', '燈籠', '路燈', '槍', '氣球', '馬車', '十字架', '橋', '刀具', '狗', '蠟燭', '鏢', '孩童', '軍隊', '電線桿', '望遠鏡', '雕像', '鼓', '軍旗', '城牆', '旗幟', '城門', '蒸汽機', '儀表', '畫像', '賽馬場', '馬廄', '琵琶', '匾額', '掛燈', '珊瑚', '船帆', '門', '守望台', '藤牌', '魚', '水稻', '亭子', '煙囪', '鐵路', '帳篷', '煤', '十字鎬', '眼鏡', '水龍', '棺材', '官員', '電報局', '英皇子', '日本國旗', '美國國旗', '西醫', '法國國旗', '絞刑', '水雷', '西妓', '教堂', '木馬', '窗', '壁燈', '大鐘', '花窗玻璃', '英國國旗', '船錨', '水煙斗', '天文台', '砲彈', '雞', '猴子', '香爐', '牌位', '軍官', '軍人', '女性', '潛水艇', '消防員', '屍體', '罪犯', '警官', '庸醫', '曾國藩', '當舖', '鳥籠', '濕版攝影相機', '井', '大水缸', '報紙', '公主', '鞭子', '戎克船/䑸', '龍舟', '長喇叭', '鑼', '玉皇宮']
+# class_names = ['BG', '人', '房子', '樹', '時鐘', '人力車', '轎子', '船', '貓', '羊', '牛', '象', '斑馬', '傘', '領帶', '扇', '水瓶', '碗', '椅', '盆栽植物', '桌', '水桶', '書', '花瓶', '馬匹', '炮', '火車', '杯', '畫作', '燈籠', '路燈', '槍', '氣球', '馬車', '十字架', '橋', '刀具', '狗', '蠟燭', '鏢', '孩童', '軍隊', '電線桿', '望遠鏡', '雕像', '鼓', '軍旗', '城牆', '旗幟', '城門', '蒸汽機', '儀表', '畫像', '賽馬場', '馬廄', '琵琶', '匾額', '掛燈', '珊瑚', '船帆', '門', '守望台', '藤牌', '魚', '水稻', '亭子', '煙囪', '鐵路', '帳篷', '煤', '十字鎬', '眼鏡', '水龍', '棺材', '官員', '電報局', '英皇子', '日本國旗', '美國國旗', '西醫', '法國國旗', '絞刑', '水雷', '西妓', '教堂', '木馬', '窗', '壁燈', '大鐘', '花窗玻璃', '英國國旗', '船錨', '水煙斗', '天文台', '砲彈', '雞', '猴子', '香爐', '牌位', '軍官', '軍人', '女性', '潛水艇', '消防員', '屍體', '罪犯', '警官', '庸醫', '曾國藩', '當舖', '鳥籠', '濕版攝影相機', '井', '大水缸', '報紙', '公主', '鞭子', '戎克船/䑸', '龍舟', '長喇叭', '鑼', '玉皇宮']
+class_names = ['BG', '人', '房子', '樹', '船', '扇', '椅', '桌', '孩童', '門', '窗', '軍人', '女性', '帽', '圖像標題', '圖像文字', '印章文字']
 
 
 class InferenceConfig(Config):
     NAME = "dian"
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
-    NUM_CLASSES = 1 + 121
+    NUM_CLASSES = 1 + 16
     IMAGE_MIN_DIM = 1024
     IMAGE_MAX_DIM = 1024
-    DETECTION_MIN_CONFIDENCE = 0.75
+    DETECTION_MIN_CONFIDENCE = 0.7
 
 graph = tf.get_default_graph()
 model = modellib.MaskRCNN( mode="inference", 
         config=InferenceConfig(), 
         model_dir=ROOT_DIR)
 try:
-    model.load_weights("./models/mask_rcnn_dian_0067.h5", by_name=True)
+    model.load_weights("./models/16_head_28.h5", by_name=True)
+    print('><><><><> Model load success <><><><><')
 except:
     print("can't find .h5 model file")
 
@@ -182,6 +187,8 @@ def color_splash(image, mask):
 
 @app.route('/', methods=['GET'])
 def index():
+    global result_text
+    result_text = []
     results = filter(lambda x: ".jpg" in x, os.listdir(ROOT_DIR + "/static/sample"))
     resp = make_response(render_template('index.html', imgs=results))
 
@@ -200,7 +207,7 @@ def result():
 
     for i, file in sorted(enumerate(folderContent)):
         # print(file)
-        if fnmatch.fnmatch(file, today + "*") and fnmatch.fnmatch(file, "*" + "_mask.png"):
+        if fnmatch.fnmatch(file, today + "*") and fnmatch.fnmatch(file, "*" + "_mask.jpg"):
             results.append(file)
 
     # results = filter(lambda x: ".png" in x, os.listdir(ROOT_DIR + "/static/results"))
@@ -208,14 +215,28 @@ def result():
 
     return resp
 
-@app.route('/hi', methods=['GET'])
-def hi():
-    return "hi"
+class ObjectDetection:
+    name = ""
+    category = []
+    url = ""
+
+    def __init__(self, name, category, url):
+        self.name = name
+        self.category = list(set(category))
+        self.url = url
+        self.total = json.dumps({ 'name': self.name, 'category': self.category, 'url': self.url }, ensure_ascii = False)
+
+    def data(self):
+        return self.total
+
 
 @app.route('/api/maskrcnn', methods=['POST'])
 def MaskRCNN():
     resp = dict()
     resp["ok"] = True
+    request_image_name = request.files['image'].filename
+    
+    # Image open
     image = Image.open(request.files['image'])
     # 避免PNG會多一個透明通道(長,寬,4)，預設是(長,寬,3)，這邊轉換一下。
     image = image.convert("RGB")
@@ -228,40 +249,29 @@ def MaskRCNN():
         r = model.detect([image_array], verbose=1)[0]
         splash = color_splash(image_array, r['masks'])
     
-    file_name = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_splash.png".format(datetime.datetime.now())
-    file_name_origin = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_origin.png".format(datetime.datetime.now())
-    file_name_mask = ROOT_DIR + "/static/results/{:%Y%m%dT%H%M%S}_mask.png".format(datetime.datetime.now())
-    skimage.io.imsave(file_name, splash)
+    time_code = "/static/results/{:%Y%m%dT%H%M%S}".format(datetime.datetime.now())
+    file_name = ROOT_DIR + time_code + "_splash.jpg"
+    file_name_origin = ROOT_DIR + time_code + "_origin.jpg"
+    file_name_mask = ROOT_DIR + time_code + "_mask.jpg"
     
     # ROIS output
-    # file_name = str(uuid.uuid4())
     # for i in range(len(r['rois'])):
     #     mask_result = Image.fromarray(r['masks'][:, :, i])
     #     mask_result.save(ROOT_DIR + "/static/results/" + file_name + "_" + str(i) + ".png")
 
+    # return image & detect objects
+    predict_object = ObjectDetection(name = request_image_name, category = [class_names[i] for i in r['class_ids']], url = time_code + "_mask.jpg")
+    result_text.append(predict_object.data())
+    resp["predict"] = result_text
+
+    # Save image 
+    skimage.io.imsave(file_name, splash)
     image.save(file_name_origin)
-    
     save_image(image_array, file_name_mask, r['rois'], r['masks'],
             r['class_ids'], r['scores'], class_names,
             scores_thresh=0.75, mode=0)
 
     return make_response(resp)
-
-# @app.route('/api/resnest', methods=['POST'])
-# def get_resnest():
-#     # load image
-#     resp = dict()
-#     resp["ok"] = True
-#     image = Image.open(request.files['image'])
-
-#     import tensorflow_hub as hub
-#     detector = hub.load("https://tfhub.dev/tensorflow/mask_rcnn/inception_resnet_v2_1024x1024/1")
-#     detector_output = detector(image)
-#     class_ids = detector_output["detection_classes"]
-#     print(class_ids)
-
-
-#     return make_response(resp)
 
 
 if __name__ == '__main__':

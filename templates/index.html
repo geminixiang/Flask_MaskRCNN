@@ -66,17 +66,21 @@
 	</header>
 
 	<div class="container">
+		<span>此模型可辨別類別 : BG, 人, 房子, 樹, 船, 扇, 椅, 桌, 孩童, 門, 窗, 軍人, 女性, 帽, 圖像標題, 圖像文字, 印章文字</span>
 		<div class="file-loading">
 			<input id="upload" name="image" type="file" class="file" multiple="true">
 		</div>
-                
+
+		<p id="predict"></p>
+
+		<hr />
 		<h2>範例圖片:</div>
 		<div style="margin: 0 150px;" class="waterfall">
 			{% for img in imgs %}
 			<div class="item">
 				<img class="img-responsive img-thumbnail center-block" src="static/sample/{{ img }}">
 			</div>
-		{% endfor %}
+			{% endfor %}
 		</div>
 	</div>
 	<script>
@@ -97,7 +101,83 @@
 			uploadClass: "btn btn-info",
 			uploadLabel: "上傳",
 			uploadIcon: "<i class=\"glyphicon glyphicon-upload\"></i> "
+		}).on("fileuploaded", function (event, data, previewId, index) {
+			var s = document.getElementById('predict');
+			var data = data.response.predict;
+			var text = "";
+			for (let i = 0; i < data.length; i++) {
+				let item = JSON.parse(data[i]);
+				text += "<h4><img data-enlargeable='' style='width: 100px;' src='"+ item.url + "' />" + item.name +
+				        "<span class='badge'>" + item.category + "</span></h4>"
+			}
+			s.innerHTML = text;
+			
+			$('img[data-enlargeable]').addClass('img-enlargeable').click(function() {
+                   	     var src = $(this).attr('src');
+                        	var modal;
+	
+        	                function removeModal() {
+                	                modal.remove();
+                        	        $('body').off('keyup.modal-close');
+                       	 	}
+                        	modal = $('<div>').css({
+					background: 'RGBA(0,0,0,.5) url(' + src + ') no-repeat center',
+                        	        backgroundSize: 'contain',
+                 	                width: '100%',
+                        	        height: '100%',
+                   	        	position: 'fixed',
+                        	        zIndex: '10000',
+                        	        top: '0',
+                               		left: '0',
+                                	cursor: 'zoom-out'
+                         	}).click(function() {
+                                	removeModal();
+                         	}).appendTo('body');
+
+                        	//handling ESC
+                       		 $('body').on('keyup.modal-close', function(e) {
+                                	if (e.key === 'Escape') {
+                                        	removeModal();
+                                	}
+                        	});
+                	});
+		}).on('fileerror', function(event, data, msg) {
+			console.log('error');
+		}).on('filepreupload', function(event, data, msg) {
+			console.log('uploading...');
 		});
+
+
+		$('img[data-enlargeable]').addClass('img-enlargeable').click(function() {
+                        var src = $(this).attr('src');
+                        var modal;
+
+                        function removeModal() {
+                                modal.remove();
+                                $('body').off('keyup.modal-close');
+                        }
+                        modal = $('<div>').css({
+                                background: 'RGBA(0,0,0,.5) url(' + src + ') no-repeat center',
+                                backgroundSize: 'contain',
+                                width: '100%',
+                                height: '100%',
+                                position: 'fixed',
+                                zIndex: '10000',
+                                top: '0',
+                                left: '0',
+                                cursor: 'zoom-out'
+                         }).click(function() {
+                                removeModal();
+                         }).appendTo('body');
+
+                        //handling ESC
+                        $('body').on('keyup.modal-close', function(e) {
+                                if (e.key === 'Escape') {
+                                        removeModal();
+                                }
+                        });
+                });
+
 	</script>
 
 </body>
