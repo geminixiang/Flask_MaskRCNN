@@ -107,7 +107,7 @@
 			var text = "";
 			for (let i = 0; i < data.length; i++) {
 				let item = JSON.parse(data[i]);
-				text += "<h4><img data-enlargeable='' style='width: 100px;' src='"+ item.url + "' />" + item.name +
+				text += "<h4><img data-enlargeable='' style='width: 100px; cursor: zoom-in;' src='"+ item.url + "' />" + item.name +
 				        "<span class='badge'>" + item.category + "</span></h4>"
 			}
 			s.innerHTML = text;
