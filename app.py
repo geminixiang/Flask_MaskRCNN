@@ -50,7 +50,6 @@ model = modellib.MaskRCNN( mode="inference",
         config=InferenceConfig(), 
         model_dir=ROOT_DIR)
 try:
-    # model.load_weights("./models/16_head_28.h5", by_name=True)
     model.load_weights(model_file, by_name=True)
     print('><><><><> Model load success <><><><><')
 except:
@@ -275,7 +274,7 @@ def MaskRCNN():
     image.save(file_name_origin)
     save_image(image_array, file_name_mask, r['rois'], r['masks'],
             r['class_ids'], r['scores'], class_names,
-            scores_thresh=0.75, mode=0)
+            scores_thresh=0.5, mode=0)
 
     return make_response(resp)
 
