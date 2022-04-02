@@ -591,3 +591,21 @@ def save_images(image, image_name, boxes, masks, class_ids, scores, class_names,
         draw.text((x1, y1), "%s %f" % (label, score), (255, 255, 255), font)
 
     masked_image.save(os.path.join(save_dir, '%s.jpg' % (image_name)))
+
+def color_splash(image, mask):
+    """Apply color splash effect.
+    image: RGB image [height, width, 3]
+    mask: instance segmentation mask [height, width, instance count]
+    Returns result image.
+    """
+    # Make a grayscale copy of the image. The grayscale copy still
+    # has 3 RGB channels, though.
+    gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    # Copy color pixels from the original color image where mask is set
+    if mask.shape[-1] > 0:
+        # We're treating all instances as one, so collapse the mask into one layer
+        mask = (np.sum(mask, -1, keepdims=True) >= 1)
+        splash = np.where(mask, image, gray).astype(np.uint8)
+    else:
+        splash = gray.astype(np.uint8)
+    return splash
