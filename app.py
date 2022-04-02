@@ -222,18 +222,14 @@ def result():
     return resp
 
 class ObjectDetection:
-    name = ""
-    category = []
-    url = ""
-
     def __init__(self, name, category, url):
         self.name = name
         self.category = list(set(category))
         self.url = url
-        self.total = json.dumps({ 'name': self.name, 'category': self.category, 'url': self.url }, ensure_ascii = False)
 
+    @property
     def data(self):
-        return self.total
+        return json.dumps({ 'name': self.name, 'category': self.category, 'url': self.url }, ensure_ascii = False)
 
 
 @app.route('/api/maskrcnn', methods=['POST'])
@@ -267,7 +263,7 @@ def MaskRCNN():
 
     # return image & detect objects
     predict_object = ObjectDetection(name = request_image_name, category = [class_names[i] for i in r['class_ids']], url = time_code + "_mask.jpg")
-    result_text.append(predict_object.data())
+    result_text.append(predict_object.data)
     resp["predict"] = result_text
 
     # Save image 
