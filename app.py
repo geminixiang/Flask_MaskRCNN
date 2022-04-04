@@ -132,6 +132,9 @@ def MaskRCNN():
             r['class_ids'], r['scores'], class_names,
             scores_thresh=0.8, mode=0)
 
+    # Close image
+    image.close()
+
     return make_response(resp)
 
 
