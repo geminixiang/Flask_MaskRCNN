@@ -43,8 +43,8 @@ class InferenceConfig(Config):
     DETECTION_MIN_CONFIDENCE = 0.8
 
 graph = tf.get_default_graph()
-model = modellib.MaskRCNN( mode="inference", 
-        config=InferenceConfig(), 
+model = modellib.MaskRCNN( mode="inference",
+        config=InferenceConfig(),
         model_dir=ROOT_DIR)
 try:
     model.load_weights(model_file, by_name=True)
@@ -96,7 +96,7 @@ def MaskRCNN():
     resp = dict()
     resp["ok"] = True
     request_image_name = request.files['image'].filename
-    
+
     # Image open
     image = Image.open(request.files['image'])
     # 避免PNG會多一個透明通道(長,寬,4)，預設是(長,寬,3)，這邊轉換一下。
@@ -104,17 +104,17 @@ def MaskRCNN():
     image_array = np.array(image)
 
     print(image_array.shape)
-  
+
     # 確認是原始graph
     with graph.as_default():
         r = model.detect([image_array], verbose=1)[0]
         splash = color_splash(image_array, r['masks'])
-    
+
     time_code = "/static/results/{:%Y%m%dT%H%M%S}".format(datetime.datetime.now())
     file_name = ROOT_DIR + time_code + "_splash.jpg"
     file_name_origin = ROOT_DIR + time_code + "_origin.jpg"
     file_name_mask = ROOT_DIR + time_code + "_mask.jpg"
-    
+
     # ROIS output
     # for i in range(len(r['rois'])):
     #     mask_result = Image.fromarray(r['masks'][:, :, i])
@@ -125,10 +125,10 @@ def MaskRCNN():
     result_text.append(predict_object.data)
     resp["predict"] = result_text
 
-    # Save image 
+    # Save image
     skimage.io.imsave(file_name, splash)
     image.save(file_name_origin)
-    save_image(image_array, file_name_mask, r['rois'], r['masks'],
+    save_images(image_array, file_name_mask, r['rois'], r['masks'],
             r['class_ids'], r['scores'], class_names,
             scores_thresh=0.8, mode=0)
 
