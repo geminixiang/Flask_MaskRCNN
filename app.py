@@ -8,7 +8,7 @@ import datetime
 import numpy as np
 import tensorflow as tf
 from PIL import Image, ImageDraw, ImageFont
-from flask import Flask, render_template, make_response, request
+from flask import Flask, jsonify, render_template, make_response, request
 
 import mrcnn.model as modellib
 from mrcnn.config import Config
@@ -137,6 +137,13 @@ def MaskRCNN():
 
     return make_response(resp)
 
+@app.route('/api/healthy', methods=['GET'])
+def Healthy():
+    data = {
+        "Healthy" : True,
+        "Author" : "https://github.com/f416720001"
+    }
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, threaded=True, debug=False)
